@@ -1,19 +1,28 @@
 #!/usr/bin/python3
 # Fabfile to distribute an archive to web server.
 import os.path
-from fabric.api import env, put, run
+from fabric.api import env
+from fabric.api import put
+from fabric.api import run
 
-env.hosts = ["104.196.168.90", "35.196.46.172"]
+env.hosts = ["54.144.145.159", "52.87.154.23"]
 
 
 def do_deploy(archive_path):
-    """Distributes an archive to web server"""
+    """Distributes an archive to web server.
+
+    Args:
+        archive_path (str): The path of the archive to distribute.
+    Returns:
+        If the file doesn't exist at archive_path or an error occurs - False.
+        Otherwise - True.
+    """
     if os.path.isfile(archive_path) is False:
         return False
-    f = archive_path.split("/")[-1]
-    name = f.split(".")[0]
+    file = archive_path.split("/")[-1]
+    name = file.split(".")[0]
 
-    if put(archive_path, "/tmp/{}".format(f)).failed is True:
+    if put(archive_path, "/tmp/{}".format(file)).failed is True:
         return False
     if run("rm -rf /data/web_static/releases/{}/".
            format(name)).failed is True:
@@ -22,7 +31,7 @@ def do_deploy(archive_path):
            format(name)).failed is True:
         return False
     if run("tar -xzf /tmp/{} -C /data/web_static/releases/{}/".
-           format(f, name)).failed is True:
+           format(file, name)).failed is True:
         return False
     if run("rm /tmp/{}".format(file)).failed is True:
         return False
