@@ -2,15 +2,18 @@
 # Fabfile to create and distribute an archive to web server.
 import os.path
 from datetime import datetime
-from fabric.api import env, local, put, run
+from fabric.api import env
+from fabric.api import local
+from fabric.api import put
+from fabric.api import run
 
-env.hosts = ["100.25.157.13", "54.87.180.3"]
+env.hosts = ["54.144.145.159", "52.87.154.23"]
 
 
 def do_pack():
     """Create a tar gzipped archive of the directory web_static."""
     dt = datetime.utcnow()
-    f = "versions/web_static_{}{}{}{}{}{}.tgz".format(dt.year,
+    file = "versions/web_static_{}{}{}{}{}{}.tgz".format(dt.year,
                                                          dt.month,
                                                          dt.day,
                                                          dt.hour,
@@ -19,19 +22,26 @@ def do_pack():
     if os.path.isdir("versions") is False:
         if local("mkdir -p versions").failed is True:
             return None
-    if local("tar -cvzf {} web_static".format(f)).failed is True:
+    if local("tar -cvzf {} web_static".format(file)).failed is True:
         return None
-    return f
+    return file
 
 
 def do_deploy(archive_path):
-    """Distributes an archive to a web server"""
+    """Distributes an archive to a web server.
+
+    Args:
+        archive_path (str): The path of the archive to distribute.
+    Returns:
+        If the file doesn't exist at archive_path or an error occurs - False.
+        Otherwise - True.
+    """
     if os.path.isfile(archive_path) is False:
         return False
-    f = archive_path.split("/")[-1]
-    name = f.split(".")[0]
+    file = archive_path.split("/")[-1]
+    name = file.split(".")[0]
 
-    if put(archive_path, "/tmp/{}".format(f)).failed is True:
+    if put(archive_path, "/tmp/{}".format(file)).failed is True:
         return False
     if run("rm -rf /data/web_static/releases/{}/".
            format(name)).failed is True:
@@ -40,9 +50,9 @@ def do_deploy(archive_path):
            format(name)).failed is True:
         return False
     if run("tar -xzf /tmp/{} -C /data/web_static/releases/{}/".
-           format(f, name)).failed is True:
+           format(file, name)).failed is True:
         return False
-    if run("rm /tmp/{}".format(f)).failed is True:
+    if run("rm /tmp/{}".format(file)).failed is True:
         return False
     if run("mv /data/web_static/releases/{}/web_static/* "
            "/data/web_static/releases/{}/".format(name, name)).failed is True:
@@ -60,7 +70,7 @@ def do_deploy(archive_path):
 
 def deploy():
     """Create and distribute an archive to a web server."""
-    f = do_pack()
-    if f is None:
+    file = do_pack()
+    if file is None:
         return False
-    return do_deploy(f)
+    return do_deploy(file)
