@@ -17,17 +17,18 @@ class State(BaseModel, Base):
 
     @property
     def cities(self):
-        """
-        returns the list of City instances
-        with state_id equals to the current State.id
-        """
-        from models import storage
-        from models.city import City
+        var = models.storage.all()
+        lists = []
+        ret = []
 
-        c_list = []
-        c_dict = storage.all(City)
+        for key in var:
+            city = key.replace('.', ' ')
+            city = shlex.split(city)
+            if (city[0] == 'City'):
+                lists.append(var[key])
 
-        for city in c_dict.values():
-            if city.state_id == self.id:
-                c_list.append(city)
-        return c_list
+        for elem in lists:
+            if (elem.state_id == self.id):
+                ret.append(elem)
+
+        return (ret)    
