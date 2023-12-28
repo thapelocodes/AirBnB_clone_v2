@@ -31,4 +31,4 @@ class State(BaseModel, Base):
             if (elem.state_id == self.id):
                 ret.append(elem)
 
-        return (ret)    
+        return (ret)
